@@ -7,35 +7,48 @@ import Navigation from './components/Navigation';
 import Products from './components/Products';
 import ShoppingCart from './components/ShoppingCart';
 
+// Contexts
+
+import { ProductContext } from './contexts/ProductContext';
+import { CartContext } from './contexts/CartContext';
+
+// Hooks
+
+import { useLocalStorage } from './hooks/useLocalStorage';
+
 function App() {
 	const [products] = useState(data);
-	const [cart, setCart] = useState([]);
+	const [cart, setCart] = useLocalStorage("cart", []);
 
 	const addItem = item => {
 		setCart([...cart, item]);
 	};
 
+	const removeItem = (itemID) => {
+		const cartArray = cart.filter(item => item.id.toString() !== itemID
+		)
+		setCart(cartArray);
+	}
+
 	return (
-		<div className="App">
-			<Navigation cart={cart} />
+		<ProductContext.Provider value={{ products, addItem }}>
+			<CartContext.Provider value={{ cart, removeItem }}>
+				<div className="App">
+					<Navigation />
 
-			{/* Routes */}
-			<Route
-				exact
-				path="/"
-				render={() => (
-					<Products
-						products={products}
-						addItem={addItem}
+					{/* Routes */}
+					<Route
+						exact
+						path="/"
+						component={Products} />
+
+					<Route
+						path="/cart"
+						component={ShoppingCart}
 					/>
-				)}
-			/>
-
-			<Route
-				path="/cart"
-				render={() => <ShoppingCart cart={cart} />}
-			/>
-		</div>
+				</div>
+			</CartContext.Provider>
+		</ProductContext.Provider>
 	);
 }
 
